@@ -18,13 +18,6 @@ class Item(Resource):
             return item
         return {'message': 'Item not found'}, 404
 
-        # item = next(filter(lambda element: element['name'] == name, items), None)  # first item filter by this function
-        # return {'item': item}, 200 if item is not None else 404
-        # # for item in items:
-        # #     if item['name'] == name:
-        # #         return item
-        # # return {'item': None}, 404  # 404 - Not found
-
     @classmethod
     def find_by_name(cls, name):
         connection = sqlite3.connect('storeData.db')
@@ -53,15 +46,6 @@ class Item(Resource):
 
         return item, 201  # 201 - Created | 202 - Accepted (when creation delay)
 
-        # if next(filter(lambda element: element['name'] == name, items), None):
-        #     return {'message': "An item with '{}' already exists.".format(name)}, 400  # bad request
-        #
-        # # data = request.get_json()
-        # data = Item.parser.parse_args()
-        #
-        # item = {'name': name, 'price': data['price']}
-        # items.append(item)
-        # return item, 201  # 201 - Created | 202 - Accepted (when creation delay)
 
     @classmethod
     def insert(cls, item):
@@ -83,30 +67,24 @@ class Item(Resource):
 
         connection.commit()
         connection.close()
-        # global items
-        # items = list(filter(lambda item: item['name'] != name, items))
 
         return {'message': 'Item deleted'}
 
     def put(self, name):
         data = Item.parser.parse_args()
-        # data = request.get_json()
 
         item = self.find_by_name(name)
-        # item = next(filter(lambda x: x['name'] == name, items), None)
 
         updated_item = {'name': name, 'price': data['price']}
 
         if item is None:
             try:
                 self.insert(updated_item)
-                # items.append(item)
             except:
                 return {'message': 'An error occurred inserting the item'}, 500
         else:
             try:
                 self.update(updated_item)
-                # item.update(data)
             except:
                 return {'message': 'An error occurred updating the item'}, 500
         return updated_item
