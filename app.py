@@ -4,13 +4,25 @@ from flask import Flask, jsonify
 from flask_jwt import JWT
 from flask_restful import Api
 
+from section4.code.db import db
 from section4.code.resources.item import Item, ItemList
+from section4.code.resources.store import Store, StoreList
 from section4.code.resources.user import UserRegister
 from security import authenticate, identity
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storeData.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'budhitha'
 api = Api(app)
+
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+
+db.init_app(app)
 
 app.config['JWT_AUTH_URL_RULE'] = '/login'
 # config JWT to expire within half an hour
@@ -37,9 +49,12 @@ def customized_error_handler(error):
     }), error.status_code
 
 
+api.add_resource(Store, '/store/<string:name>')
 api.add_resource(Item, '/item/<string:name>')
 api.add_resource(ItemList, '/items')
+api.add_resource(StoreList, '/stores')
 api.add_resource(UserRegister, '/register')
 
 if __name__ == '__main__':
+    # db.init_app(app)
     app.run(port=5000, debug=True)
