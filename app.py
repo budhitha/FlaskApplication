@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 
 from flask import Flask, jsonify
@@ -9,8 +10,14 @@ from resources.store import Store, StoreList
 from resources.user import UserRegister
 from security import authenticate, identity
 
+uri = os.getenv("DATABASE_URL", 'sqlite:///storeData.db')
+if uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
+# rest of connection code using the connection string `uri`
+
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///storeData.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'budhitha'
 api = Api(app)
