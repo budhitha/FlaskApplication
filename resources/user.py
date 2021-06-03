@@ -1,8 +1,9 @@
 from flask_jwt_extended import (create_access_token, create_refresh_token,
-                                jwt_required, get_jwt_identity)
+                                jwt_required, get_jwt_identity, get_jwt)
 from flask_restful import Resource, reqparse
 from werkzeug.security import safe_str_cmp
 
+from blacklist import BLACKLIST
 from models.user_model import UserModel
 
 _user_parser = reqparse.RequestParser()
@@ -11,7 +12,6 @@ _user_parser.add_argument('password', type=str, required=True, help='This field 
 
 
 class UserRegister(Resource):
-
     def post(self):
         data = _user_parser.parse_args()
 
@@ -25,7 +25,6 @@ class UserRegister(Resource):
 
 
 class User(Resource):
-
     @classmethod
     def get(cls, user_id):
         user = UserModel.find_by_id(user_id)
@@ -43,7 +42,6 @@ class User(Resource):
 
 
 class UserLogin(Resource):
-
     @classmethod
     def post(cls):
         data = _user_parser.parse_args()
@@ -56,6 +54,14 @@ class UserLogin(Resource):
             return {'access_token': access_token, 'refresh_token': refresh_token}
 
         return {'message': 'Invalid credentials'}, 401
+
+
+class UserLogout(Resource):
+    @jwt_required()
+    def post(self):
+        jti = get_jwt()['jti']  # jti is "JWT ID", an unique identifier for a JWT.
+        BLACKLIST.add(jti)
+        return {'message': 'Successfully logged out.'}
 
 
 class TokenRefresh(Resource):
